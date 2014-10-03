@@ -1,0 +1,238 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>SubwayMaps (America)</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		
+<!--	<script type="text/javascript" charset="utf-8" src="scripts/cordova.js"></script>	-->
+		
+		<script type="text/javascript" charset="utf-8" src="scripts/jquery/jquery.js"></script>
+				<script type="text/javascript">
+		$(document).bind("mobileinit", function(){
+		    $.mobile.ajaxEnabled = false;
+		    $.mobile.pushStateEnabled = false;
+		    $.mobile.touchOverflowEnabled = false;
+		    $.mobile.defaultPageTransition  = 'slide';
+		    $.mobile.defaultDialogTransition = 'pop';
+		    $.mobile.transitionFallbacks.slide = 'none';
+		    $.mobile.transitionFallbacks.pop = 'none';
+		    $.mobile.buttonMarkup.hoverDelay = 0;
+		    $.mobile.phonegapNavigationEnabled = true;
+		});
+		</script>
+		<script type="text/javascript" charset="utf-8" src="scripts/jquery/jquery.mobile.js"></script>
+				
+		<script type="text/javascript" charset="utf-8" src="scripts/jquery/flexcroll.js"></script>
+		
+		<script type="text/javascript" charset="utf-8" src="scripts/domain.js"></script>
+		<script type="text/javascript" charset="utf-8" src="scripts/commons.js"></script>
+		
+		
+		<link rel="stylesheet" type="text/css" href="css/jquery.mobile.css"/>
+		<link rel="stylesheet" type="text/css" href="css/flexcrollstyles.css"/>
+		
+		<style type="text/css">
+			.vscrollerbase, .hscrollerbase {
+				visibility: hidden !important; /* visible */
+			}
+			
+			.vscrollerbar, .hscrollerbar { 
+				padding: 0px;
+			}
+		</style>
+		<script type="text/javascript" charset="utf-8">
+		
+			var defaultCity	= 'New-york';
+			var tubeMapsImages = {
+				'Atlanta': new CityTubeMap('Atlanta','images/atlanta-map.gif'),
+				'Baltimore': new CityTubeMap('Baltimore','images/baltimore-map.gif'),
+				'Belo-horizonte': new CityTubeMap('Belo-horizonte','images/belo-horizonte-map.gif'),
+				'Boston': new CityTubeMap('Boston','images/boston-map.gif'),
+				'Brasilia': new CityTubeMap('Brasilia','images/brasilia-map.gif'),
+				'Buenos-aires': new CityTubeMap('Buenos-aires','images/buenos-aires-map.gif'),
+				'Caracas': new CityTubeMap('Caracas','images/caracas-map.gif'),
+				'Chicago': new CityTubeMap('Chicago','images/chicago-map.gif'),
+				'Cleveland': new CityTubeMap('Cleveland','images/cleveland-map.gif'),
+				'Detroit': new CityTubeMap('Detroit','images/detroit-map.gif'),
+				'Edmonton': new CityTubeMap('Edmonton','images/edmonton-map.gif'),
+				'Guadalajara': new CityTubeMap('Guadalajara','images/guadalajara-map.gif'),
+				'Jacksonville': new CityTubeMap('Jacksonville','images/jacksonville-map.gif'),
+				'Los-angeles': new CityTubeMap('Los-angeles','images/los-angeles-map.gif'),
+				'Medellin': new CityTubeMap('Medellin','images/medellin-map.gif'),
+				'Mexico': new CityTubeMap('Mexico','images/mexico-map.gif'),
+				'Miami': new CityTubeMap('Miami','images/miami-map.gif'),
+				'Monterrey': new CityTubeMap('Monterrey','images/monterrey-map.gif'),
+				'Montreal': new CityTubeMap('Montreal','images/montreal-map.gif'),
+				'New-york': new CityTubeMap('New-york','images/new-york-map.gif'),
+				'Philadelphia': new CityTubeMap('Philadelphia','images/philadelphia-map.gif'),
+				'Porto-alegre': new CityTubeMap('Porto-alegre','images/porto-alegre-map.gif'),
+				'Recife': new CityTubeMap('Recife','images/recife-map.gif'),
+				'Rio-de-janeiro': new CityTubeMap('Rio-de-janeiro','images/rio-de-janeiro-map.gif'),
+				'Saint-louis': new CityTubeMap('Saint-louis','images/saint-louis-map.gif'),
+				'San-francisco': new CityTubeMap('San-francisco','images/san-francisco-map.gif'),
+				'San-juan': new CityTubeMap('San-juan','images/san-juan-map.gif'),
+				'Santiago': new CityTubeMap('Santiago','images/santiago-map.gif'),
+				'Sao-paulo': new CityTubeMap('Sao-paulo','images/sao-paulo-map.gif'),
+				'Toronto': new CityTubeMap('Toronto','images/toronto-map.gif'),
+				'Vancouver': new CityTubeMap('Vancouver','images/vancouver-map.gif'),
+				'Washington': new CityTubeMap('Washington','images/washington-map.gif')
+			};
+			
+			var windowHeight;
+			var windowWidth;
+			var footerHeight;
+			var localStorageEnabled;
+			
+			var pageTubeMap;
+			var pageTubeMapImage;
+			
+			function loaded() {
+				console.log('loaded');
+				
+				//disable taping footer
+				$("[data-role=footer]").fixedtoolbar({ tapToggle: false });
+			
+				windowHeight	= $(window).height();
+				windowWidth		= $(window).width();
+				footerHeight	= $('#main-footer').height();
+				
+				pageTubeMap			= $('#page-tube-map');
+				pageTubeMapImage	= $('#page-tube-map-image');
+				
+				pageTubeMap.height(windowHeight-footerHeight);
+				pageTubeMap.width(windowWidth);
+				
+				//does local storage exist?
+				if (window.localStorage) {
+					localStorageEnabled	= true;
+				} else {
+					localStorageEnabled	= false;
+				}
+				
+				
+	  			fleXenv.fleXcrollMain('page-tube-map');
+	  			
+	  			fleXenv.fleXcrollMain('city-menu-popup-list');
+	  			
+	  			//load city from local storage
+				updateTubeMap();
+			}
+			
+			function updateTubeMap(city) {
+				console.log('updateTubeMap[' + city +']');
+				
+				$('#city-menu-popup').popup('close');
+			
+				if (!city) {
+					if (localStorageEnabled) {
+						var lastSelectedCity = window.localStorage.getItem("keyLastSelectedCity");
+						if (lastSelectedCity) {
+							city	= lastSelectedCity;
+						} else {
+							city	= defaultCity;
+						}					
+					} else {
+						city	= defaultCity;
+					}
+				}
+				
+				var tubeMap	= tubeMapsImages[city];
+				if (tubeMap==undefined) {
+					alert('Error: City ' + city + ' not found!');
+					tubeMap	= tubeMapsImages[defaultCity];
+				}
+				
+				pageTubeMapImage.attr('src',tubeMap.imagePath);
+				
+				if (localStorageEnabled) {
+					window.localStorage.setItem("keyLastSelectedCity", city);
+				}
+				
+				if (pageTubeMap.fleXcroll) { 
+					pageTubeMap.fleXcroll.setScrollPos(0,0);
+				}
+			}
+
+			document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+
+			document.addEventListener('DOMContentLoaded', function () { setTimeout(loaded, 500); }, false);
+			//window.addEventListener('load', setTimeout(function () { loaded(); }, 500), false);
+		</script>
+	</head>
+	
+	//TODO zoomming image
+	// load nbew city - reset position to 0,0
+	
+	<body>
+		<!--- Main Page --->
+		<div data-role="page" id="main-page" data-theme="d">
+			
+			<div data-role="popup" id="city-menu-popup">
+				<ul data-role="listview" data-filter="false" data-autodividers="true" data-inset="true" style="min-height:300px; max-height:500px; min-width:200px;" data-theme="c" data-divider-theme="c" id="city-menu-popup-list">
+					<li><a href="#" onClick="updateTubeMap('Atlanta')">Atlanta</a></li>
+					<li><a href="#" onClick="updateTubeMap('Baltimore')">Baltimore</a></li>
+					<li><a href="#" onClick="updateTubeMap('Belo-horizonte')">Belo Horizonte</a></li>
+					<li><a href="#" onClick="updateTubeMap('Boston')">Boston</a></li>
+					<li><a href="#" onClick="updateTubeMap('Brasilia')">Brasilia</a></li>
+					<li><a href="#" onClick="updateTubeMap('Buenos-aires')">Buenos Aires</a></li>
+					<li><a href="#" onClick="updateTubeMap('Caracas')">Caracas</a></li>
+					<li><a href="#" onClick="updateTubeMap('Chicago')">Chicago</a></li>
+					<li><a href="#" onClick="updateTubeMap('Cleveland')">Cleveland</a></li>
+					<li><a href="#" onClick="updateTubeMap('Detroit')">Detroit</a></li>
+					<li><a href="#" onClick="updateTubeMap('Edmonton')">Edmonton</a></li>
+					<li><a href="#" onClick="updateTubeMap('Guadalajara')">Guadalajara</a></li>
+					<li><a href="#" onClick="updateTubeMap('Jacksonville')">Jacksonville</a></li>
+					<li><a href="#" onClick="updateTubeMap('Los-angeles')">Los Angeles</a></li>
+					<li><a href="#" onClick="updateTubeMap('Medellin')">Medellin</a></li>
+					<li><a href="#" onClick="updateTubeMap('Mexico')">Mexico</a></li>
+					<li><a href="#" onClick="updateTubeMap('Miami')">Miami</a></li>
+					<li><a href="#" onClick="updateTubeMap('Monterrey')">Monterrey</a></li>
+					<li><a href="#" onClick="updateTubeMap('Montreal')">Montreal</a></li>
+					<li><a href="#" onClick="updateTubeMap('New-york')">New York</a></li>
+					<li><a href="#" onClick="updateTubeMap('Philadelphia')">Philadelphia</a></li>
+					<li><a href="#" onClick="updateTubeMap('Porto-alegre')">Porto Alegre</a></li>
+					<li><a href="#" onClick="updateTubeMap('Recife')">Recife</a></li>
+					<li><a href="#" onClick="updateTubeMap('Rio-de-janeiro')">Rio de Janeiro</a></li>
+					<li><a href="#" onClick="updateTubeMap('Saint-louis')">Saint Louis</a></li>
+					<li><a href="#" onClick="updateTubeMap('San-francisco')">San Francisco</a></li>
+					<li><a href="#" onClick="updateTubeMap('San-juan')">San Juan</a></li>
+					<li><a href="#" onClick="updateTubeMap('Santiago')">Santiago</a></li>
+					<li><a href="#" onClick="updateTubeMap('Sao-paulo')">Sao Paulo</a></li>
+					<li><a href="#" onClick="updateTubeMap('Toronto')">Toronto</a></li>
+					<li><a href="#" onClick="updateTubeMap('Vancouver')">Vancouver</a></li>
+					<li><a href="#" onClick="updateTubeMap('Washington')">Washington</a></li>
+				</ul>
+			</div>
+			
+			<div data-role="popup" id="info-popup" data-theme="c">
+				<p>
+				<div>
+					<center>
+					<img src="icons/icon-36.png" style="vertical-align: middle;"/>
+					<span style="vertical-align: middle;"><strong>SubwayMaps (America) v1.4.0</strong></span>
+					</center>
+				</div>
+				</p>
+				<p>Developed by AXIS APPLICATIONS<p>
+				<p>Homepage:<br><a href="http://www.axisapplications.com">www.axisapplications.com</a><p>
+				<p>E-Mail:<br><a href="mailto:support@axisapplications.com">support@axisapplications.com</a><p>
+				<p>Thanks to Robert Schwandl for his maps!<p>
+			</div>
+  			
+  			<div data-role="content" id="page-tube-map" style="overflow: auto; position: relative; padding: 0px;">
+				<!-- dynamic content -->
+				<img id='page-tube-map-image' src="" onLoad="fleXenv.updateScrollBars();"/>
+			</div>
+
+  			<div data-role="footer" data-position="fixed" data-theme="c" class="nav-menu" id="main-footer">
+				<div data-role="navbar" class="nav-menu">
+					<ul>
+						<li><a href="#city-menu-popup" id="main-footer-city" data-icon="search" data-rel="popup">City</a></li>
+						<li><a href="#info-popup" id="main-footer-info" data-icon="info" data-rel="popup">Info</a></li>
+					</ul>
+				</div>
+			</div>
+
+		</div>
+	</body>
+</html>
